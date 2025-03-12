@@ -75,7 +75,6 @@ def home():
                 title= data['todoTitle'],
                 user = current_user
             )
-            due = data['date']
             first_task = Task(
                 info = data['firstTask'],
                 title = new_todo
