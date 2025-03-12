@@ -1,6 +1,4 @@
-from ctypes.wintypes import HTASK
-from datetime import date
-from flask import Flask, abort, render_template, redirect, url_for, flash, request
+from flask import Flask, render_template, redirect, url_for, flash, request
 from flask_bootstrap import Bootstrap5
 from flask_login import UserMixin, login_user, LoginManager, current_user, logout_user, login_required
 from flask_sqlalchemy import SQLAlchemy
@@ -8,12 +6,9 @@ from sqlalchemy.exc import NoResultFound
 from sqlalchemy.orm import relationship, DeclarativeBase, Mapped, mapped_column
 from sqlalchemy import Integer, String, Boolean, Date
 from datetime import datetime, date
-from functools import wraps
-from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from dotenv import load_dotenv
 load_dotenv()
-
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = os.environ.get('FLASK_KEY')
@@ -71,6 +66,7 @@ with app.app_context():
 
 @app.route("/", methods=['GET','POST'])
 def home():
+    # Check if a User is Signed In
     if current_user.is_authenticated:
         # Create New Task List
         if request.method == 'POST':
@@ -164,6 +160,7 @@ def show_todo(todo_id):
     return render_template("todo.html", todo=requested_todo, current_user=current_user, tasks=tasks, important=imp)
 
 @app.route("/change_title/<int:todo_id>", methods=['POST'])
+@login_required
 def change_title(todo_id):
     todo = db.get_or_404(Todo, todo_id)
     todo.title = request.form["title"]
@@ -172,6 +169,7 @@ def change_title(todo_id):
     return redirect(url_for("show_todo", todo_id=todo_id))
 
 @app.route("/change_task", methods=['POST'])
+@login_required
 def change_task():
     data = request.form
     current_task = db.get_or_404(Task, data["taskId"])
@@ -215,6 +213,7 @@ def star(task_id):
     return redirect(url_for("show_todo", todo_id=task.title.id))
 
 @app.route("/delete_todo/<int:todo_id>")
+@login_required
 def delete_todo(todo_id):
     todo_delete = db.get_or_404(Todo, todo_id)
     db.session.delete(todo_delete)
@@ -222,22 +221,12 @@ def delete_todo(todo_id):
     return redirect(url_for("home"))
 
 @app.route("/delete_task/<int:task_id>")
+@login_required
 def delete_task(task_id):
     task_delete = db.get_or_404(Task, task_id)
     db.session.delete(task_delete)
     db.session.commit()
     return redirect(url_for("show_todo", todo_id=task_delete.title_id))
-# task = False
-# # Test HTML Page
-# @app.route("/")
-# def create_todo():
-#     return render_template("create.html")
-# @app.route("/todo")
-# def test_todo():
-#     return render_template("todo.html", task=task)
-# @app.route("/add_task/<int:todo_id>")
-# def add_task(todo_id):
-#     pass
 
 if __name__ == "__main__":
     app.run(debug=True)
