@@ -97,7 +97,7 @@ def home():
         result = db.session.execute(db.select(User).where(User.email == data['email']))
         user = result.scalar()
         if user:
-            flash("You've already signed up with that email, log in instead!")
+            flash("You've already signed up with that email, log in instead.")
             return redirect(url_for('login'))
         new_user = User(
             email = data['email'],
@@ -120,7 +120,7 @@ def login():
 
         # Incorrect Email
         if not user:
-            flash("That email does not exist, please try again.")
+            flash("That email does not exist, please try again or Sign Up below.")
             return redirect(url_for('login'))
 
         # Incorrect Password
